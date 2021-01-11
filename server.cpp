@@ -15,6 +15,7 @@
 
 #include "headers/ConectionManager.hpp"
 #include "headers/ClientManager.hpp"
+#include "headers/RequestManager.hpp"
 
 
 #define PORT 2030
@@ -22,7 +23,7 @@
 
 extern int errno;
 
-std::mutex clientListLock;
+std::mutex clientManagerLock;
 std::list<ClientData> clientList;
 int sd; //soketul pe care se asculta pt accept
 
@@ -38,7 +39,7 @@ ClientManager clientManager;
 pthread_t conectionManagerThread;
 static void * treatConectionManagerThread(void* arg);
 
-
+pthread_t requestManagerThread;
 static void * treatRequestManagerThread(void*arg);
 int acc_con(int sd);
 void checkClientRequest(std::list<ClientData> clList);
@@ -73,6 +74,7 @@ int main (){
     for(int i=0;i<NOTHREADS;i++) threadCreate(i);
     printf("[Server]Astept clienti la portul %d \n",PORT);
     pthread_create(&conectionManagerThread,NULL,&treatConectionManagerThread,(void*)&sd);
+    pthread_create(&requestManagerThread,NULL,&treatRequestManagerThread,NULL);
     while(true);
     return 0;
 }
@@ -86,10 +88,15 @@ static void * treat(void* arg){
 }
 
 static void * treatConectionManagerThread(void* arg){
-    ConectionManager conectionManager(&clientManager,&clientListLock);
+    ConectionManager conectionManager(&clientManager,&clientManagerLock);
     conectionManager.start(sd);
 } 
+static void* treatRequestManagerThread(void* arg){
 
+    RequestManager requestManager(&clientManager,&clientManagerLock);
+    requestManager.start();
+    return NULL;
+}
 // int acc_con(int sd){
 //     
 //     return 0;

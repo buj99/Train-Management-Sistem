@@ -7,9 +7,9 @@ ConectionManager::ConectionManager(/* args */)
 ConectionManager::~ConectionManager()
 {
 }
-ConectionManager::ConectionManager(ClientManager * clientManager,std::mutex* clientListLock){
+ConectionManager::ConectionManager(ClientManager * clientManager,std::mutex* clientManagerLock){
     this->clientManager=clientManager;
-    this->clientListLock=clientListLock;
+    this->clientManagerLock=clientManagerLock;
 }
 int ConectionManager::start(int sd){
     printf("[Thread Conection Manager]start\n");
@@ -24,9 +24,9 @@ int ConectionManager::start(int sd){
         }
         else{
          ClientData newClient(client);
-            clientListLock->lock();
+            clientManagerLock->lock();
             clientManager->addClient(newClient);
-            clientListLock->unlock();
+            clientManagerLock->unlock();
         }
     }
 }
