@@ -19,14 +19,17 @@ int ConectionManager::start(int sd){
     bzero(&from,sizeof(from));
     int length = sizeof(from);
     while(true){
+        
         if((client=accept(sd,(struct sockaddr*)&from,(socklen_t*)&length))<0){
             printf("[Server]Eroare la accept()\n");
         }
         else{
-         ClientData newClient(client);
+            ClientData newClient(client);
             clientManagerLock->lock();
             clientManager->addClient(newClient);
             clientManagerLock->unlock();
         }
+        
     }
+    
 }

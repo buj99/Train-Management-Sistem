@@ -17,3 +17,18 @@ bool ClientManager::addClient(ClientData client){
 
     return true;
 }
+std::list<int> ClientManager::getClientSDList(){
+    std::list<int> l;
+    for(ClientData cl :this->clientList){
+        l.push_front(cl.getSD());
+    }
+    return l;
+}
+
+void ClientManager::removeClient(int clientSD){
+    this->clientList.remove_if(
+        [clientSD](ClientData cl){
+            return cl.getSD()==clientSD;
+        }
+    );
+}

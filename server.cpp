@@ -18,7 +18,7 @@
 #include "headers/RequestManager.hpp"
 
 
-#define PORT 2030
+#define PORT 2021
 #define NOTHREADS 100
 
 extern int errno;

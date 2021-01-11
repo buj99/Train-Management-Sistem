@@ -28,7 +28,7 @@ extern int errno;
 
 /* portul de conectare la server*/
 int port;
-
+enum requestType{login, quit , today,phour,shour,update};
 int main (int argc, char *argv[])
 {
   int sd;			// descriptorul de socket
