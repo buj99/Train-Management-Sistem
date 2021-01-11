@@ -10,9 +10,11 @@
 #include <sys/select.h>
 #include <stdbool.h>
 #include <list>
+#include <mutex>
 
 
 #include "headers/ConectionManager.hpp"
+#include "headers/ClientManager.hpp"
 
 
 #define PORT 2030
@@ -20,19 +22,24 @@
 
 extern int errno;
 
+std::mutex clientListLock;
+std::list<ClientData> clientList;
+int sd; //soketul pe care se asculta pt accept
+
 typedef struct {
     pthread_t idThread;
     int thCount;
 }Thread; 
 Thread* threadsPool;
-
-std::list<ClientData> clientList;
-int sd; //soketul pe care se asculta pt accept
-pthread_t conectionManagerThread;
-
 void  threadCreate(int i);
 static void * treat(void*);
+
+ClientManager clientManager;
+pthread_t conectionManagerThread;
 static void * treatConectionManagerThread(void* arg);
+
+
+static void * treatRequestManagerThread(void*arg);
 int acc_con(int sd);
 void checkClientRequest(std::list<ClientData> clList);
 void addToRequestQue(ClientData client);
@@ -79,7 +86,7 @@ static void * treat(void* arg){
 }
 
 static void * treatConectionManagerThread(void* arg){
-    ConectionManager conectionManager ;
+    ConectionManager conectionManager(&clientManager,&clientListLock);
     conectionManager.start(sd);
 } 
 

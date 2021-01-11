@@ -1,10 +1,15 @@
 #include "../headers/ConectionManager.hpp"
+
 ConectionManager::ConectionManager(/* args */)
 {
 }
 
 ConectionManager::~ConectionManager()
 {
+}
+ConectionManager::ConectionManager(ClientManager * clientManager,std::mutex* clientListLock){
+    this->clientManager=clientManager;
+    this->clientListLock=clientListLock;
 }
 int ConectionManager::start(int sd){
     printf("[Thread Conection Manager]start\n");
@@ -19,7 +24,9 @@ int ConectionManager::start(int sd){
         }
         else{
          ClientData newClient(client);
-            clientManager.addClient(newClient);
+            clientListLock->lock();
+            clientManager->addClient(newClient);
+            clientListLock->unlock();
         }
     }
 }
