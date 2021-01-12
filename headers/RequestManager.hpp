@@ -4,6 +4,7 @@
 #include <mutex>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <string.h>
 class RequestManager
 {
 private:
@@ -16,4 +17,6 @@ public:
     RequestManager(ClientManager* clientManager, std::mutex* clientManagerLock);
     ~RequestManager();
     void start();
+    void clientComandDecoder(char* command);
+    int reciveMessage(char** msg,int sd);
 };

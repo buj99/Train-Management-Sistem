@@ -3,9 +3,9 @@ ServerCppFiles = server.cpp ./sources/ClientManager.cpp ./sources/ClientData.cpp
 all : clean server client 
 
 server : server.cpp 
-		gcc $(ServerCppFiles) -o server -pthread -lstdc++
+		g++ $(ServerCppFiles) -o server -pthread -lstdc++
 client : client.cpp
-		gcc client.cpp -o client 
+		g++ client.cpp -o client 
 clean : 
 	rm server client
 start : 
