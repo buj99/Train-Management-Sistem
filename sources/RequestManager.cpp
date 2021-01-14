@@ -8,30 +8,48 @@ RequestManager::~RequestManager()
 {
 }
 
-RequestManager::RequestManager(ClientManager* clientManager, std::mutex* clientManagerLock){
+RequestManager::RequestManager(ClientManager* clientManager, std::mutex* clientManagerLock,std::deque <Request*>* requestQue ,std::mutex* requestQueLock ){
     this->clientManager=clientManager;
     this->clientManagerLock=clientManagerLock;
+    this->requestQue=requestQue;
+    this->requestQueLock=requestQueLock;
 }
-int RequestManager::reciveMessage(char** msg,int sd){
-    char* msgFromClient;
-    int len ;
-    int readRet;
-    if((readRet=read(sd, &len,sizeof(int)))==-1){
-        perror("[Thread Request Manager]Eroare la read()\n");
-        return -1;
-    }
-    if(readRet==0)return 0;
-    msgFromClient=(char*)malloc(sizeof(char*)*len);
-    bzero(msgFromClient,sizeof(char));
-    if((readRet=read(sd,msgFromClient,len))==-1){
-        perror("[Thread Request Manager]Eroare la read()\n");
-        return -1;
-    }
-    if(readRet==len){ 
-        *msg=msgFromClient;
-        return len;
-    }
+int RequestManager::checkIfIsConected(int sd){
+    char* x=new char();
+    if(recv(sd,x,1,MSG_PEEK)<=0)return 0;
+    return 1;
 }
+Request * RequestManager::decodeRequest(int sd){
+    Request* newRequest = new Request();
+    newRequest->setClient(sd);
+    int rqType;
+    if(read(sd,&rqType,sizeof(int))==-1)return NULL;
+    newRequest->setRequestType(rqType);
+    if(rqType==LOGIN||rqType==UPDATE){
+        int len;
+        if(read(sd,&len,sizeof(int))==-1)return NULL;
+        char* parameter = (char*)malloc(len);
+        if(read(sd,parameter,len)==-1)return NULL;
+        newRequest->setRequestParameter(parameter);
+    }
+    return newRequest;
+}
+int RequestManager::reciveMesage(int sd){
+    if(checkIfIsConected(sd)==0){
+        return 0;
+    }
+    else{
+        Request* newRequest=decodeRequest(sd);
+        this->requestQueLock->lock();
+        this->requestQue->push_back(newRequest);
+        this->requestQueLock->unlock();
+        return 1;
+    }
+
+}
+
+
+
 void RequestManager::start(){
     printf("[Thread Request Manager]start\n");
     fd_set readfds;
@@ -62,14 +80,13 @@ void RequestManager::start(){
                 for(int clientSD : clientSDList){
                     if(FD_ISSET(clientSD,&readfds)){
                         //if(read(clientSD,&fromClient,sizeof(int))==0){
-                        if(reciveMessage(&msgFromClient,clientSD)==0){
+                        if(reciveMesage(clientSD)==0){
                             this->clientManagerLock->lock();
                             this->clientManager->removeClient(clientSD);
                             close(clientSD);
                             this->clientManagerLock->unlock();
                         }
                         else{
-                            printf("[Thread Request Manager]Am primit requestul %s\n",msgFromClient);
                         }
                         
                     }

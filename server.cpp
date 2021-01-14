@@ -10,21 +10,27 @@
 #include <sys/select.h>
 #include <stdbool.h>
 #include <list>
+#include <deque>
 #include <mutex>
+
 
 
 #include "headers/ConectionManager.hpp"
 #include "headers/ClientManager.hpp"
 #include "headers/RequestManager.hpp"
+#include "./headers/Request.hpp"
 
 
-#define PORT 2021
+#define PORT 2020
 #define NOTHREADS 100
 
 extern int errno;
 
 std::mutex clientManagerLock;
 std::list<ClientData> clientList;
+
+std::deque <Request *> requestQue;
+std::mutex requestQueLock;
 int sd; //soketul pe care se asculta pt accept
 
 typedef struct {
@@ -41,9 +47,7 @@ static void * treatConectionManagerThread(void* arg);
 
 pthread_t requestManagerThread;
 static void * treatRequestManagerThread(void*arg);
-int acc_con(int sd);
-void checkClientRequest(std::list<ClientData> clList);
-void addToRequestQue(ClientData client);
+
 int main (){
 
     struct sockaddr_in server ;
@@ -84,7 +88,17 @@ void  threadCreate(int i){
 }
 static void * treat(void* arg){
     int i =*((int*)arg);
-    //printf("[thread %d]pornit...\n",i);
+    while(true){
+        if(requestQue.front()!=NULL){
+            requestQueLock.lock();
+            Request* rqToTreat = requestQue.front();
+            requestQue.pop_front();
+            requestQueLock.unlock();
+            printf("[Thread %d] Am prmit requestul : \n",i);
+            rqToTreat->printInfo();
+        }
+        sleep(1);
+    }
 }
 
 static void * treatConectionManagerThread(void* arg){
@@ -93,46 +107,7 @@ static void * treatConectionManagerThread(void* arg){
 } 
 static void* treatRequestManagerThread(void* arg){
 
-    RequestManager requestManager(&clientManager,&clientManagerLock);
+    RequestManager requestManager(&clientManager,&clientManagerLock,&requestQue,&requestQueLock);
     requestManager.start();
     return NULL;
 }
-// int acc_con(int sd){
-//     
-//     return 0;
-// }
-
-// void checkClientRequest(std::list<ClientData> clList){
-//     fd_set readfds;
-//     struct timeval tv;
-//     int retval;
-//     int lastsd;
-//     tv.tv_sec=1;
-//     tv.tv_usec=0;
-//     FD_ZERO(&readfds);
-//     for(ClientData clData:clList){
-//         lastsd=clData.getSD();
-//         FD_SET(lastsd,&readfds);
-//     }
-//     retval=select(lastsd+1,&readfds,NULL,NULL,&tv);
-//     if(retval==-1){
-//         perror("[server]Eroare la select()\n");
-//     }
-//     else{
-//         if(retval){
-//             for(ClientData cl : clList){
-//                 if(FD_ISSET(cl.getSD(),&readfds)){
-//                     addToRequestQue(cl);
-//                 }
-//             }
-//         }
-//     }
-    
-// }
-
-// void addToRequestQue(ClientData client){
-//     printf("[Server]request nou de la %d\n",client.getSD());
-//     int primit;
-//     read(client.getSD(),&primit, sizeof(primit));
-//     sleep(5);
-// }

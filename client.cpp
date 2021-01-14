@@ -17,20 +17,20 @@
 #include <iostream>
 #include <time.h>
 #include <string.h>
+#include "./headers/RequestTypes.hpp"
 
 /* codul de eroare returnat de anumite apeluri */
 extern int errno;
 
-enum requestType{login, quit , today,phour,shour,update,nocomand};
-requestType request;
-requestType setRequest(char* msg);
-void makeRequest(requestType request , char* parameter);
+int request;
+int setRequest(char* msg);
+void makeRequest(int request , char* parameter);
 /* portul de conectare la server*/
 int port;
-
+int sd;			// descriptorul de socket
 int main (int argc, char *argv[])
 {
-  int sd;			// descriptorul de socket
+  
   struct sockaddr_in server;	// structura folosita pentru conectare 
   		// mesajul trimis
   int nr=0;
@@ -77,24 +77,24 @@ int main (int argc, char *argv[])
     request=setRequest(msg);
     switch (request)
     {
-    case login:{
+    case LOGIN:{
       scanf("%s",msg);
       makeRequest(request,msg);
       }
       break;
-    case quit:
+    case QUIT:
       makeRequest(request,NULL);
     break;
-    case today:
+    case TODAY:
       makeRequest(request,NULL);
       break;
-    case phour:
+    case PHOUR:
       makeRequest(request,NULL);
       break;
-    case shour:
+    case SHOUR:
       makeRequest(request,NULL);
       break;
-    case update:{
+    case UPDATE:{
       scanf("%s",msg);
       makeRequest(request,msg);
     }
@@ -105,31 +105,31 @@ int main (int argc, char *argv[])
       break;
     }
   }
-  // len= strlen(msg)+1;
-  // printf("[Client]Am primit comanda : %s de lungime %d\n",msg,len);
-  // write(sd,&len,sizeof(int));
-  // write(sd,msg,len);
+
   
   close (sd);
 }
-requestType setRequest(char* msg){
+int setRequest(char* msg){
 
-  if(strcmp(msg,"today")==0)return today;
-  if(strcmp(msg,"login")==0)return login;
-  if(strcmp(msg,"quit")==0)return quit;
-  if(strcmp(msg,"phour")==0)return phour;
-  if(strcmp(msg,"shour")==0)return shour;
-  if(strcmp(msg,"update")==0)return update;
+  if(strcmp(msg,"today")==0)return TODAY;
+  if(strcmp(msg,"login")==0)return LOGIN;
+  if(strcmp(msg,"quit")==0)return QUIT;
+  if(strcmp(msg,"phour")==0)return PHOUR;
+  if(strcmp(msg,"shour")==0)return SHOUR;
+  if(strcmp(msg,"update")==0)return UPDATE;
   fflush(stdin);
-  return nocomand;
+  return -1;
 }
 
-void makeRequest(requestType request , char* parameter){
-  write(sd,(int)request,sizeof(int));
-  if(parameter!=NULL){
-    write(sd,(int)(strlen(parameter)+1),sizeof(int));
-    write(sd,parameter,strlen(parameter)+1);
-    
+void makeRequest(int request , char* parameter){
+  if(write(sd,&request,sizeof(int))!=-1){
+    printf("[TEST]Am trimis request %d ",request);
   }
-  printf("[TEST]msg:%s\n",msg);
+  if(request==LOGIN||request==UPDATE){
+    int len = strlen(parameter)+1;
+    write(sd,(void*)&len,sizeof(len));
+    write(sd,parameter,len);
+    printf("cu parametrul \" %s \"  de lungime %d",parameter,len);
+  }
+  printf("\n");
 }
