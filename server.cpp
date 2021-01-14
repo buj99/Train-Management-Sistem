@@ -88,10 +88,11 @@ void  threadCreate(int i){
 }
 static void * treat(void* arg){
     int i =*((int*)arg);
+    Request* rqToTreat;
     while(true){
-        if(requestQue.front()!=NULL){
+        if(!requestQue.empty()){
             requestQueLock.lock();
-            Request* rqToTreat = requestQue.front();
+            rqToTreat=requestQue.front();
             requestQue.pop_front();
             requestQueLock.unlock();
             printf("[Thread %d] Am prmit requestul : \n",i);
