@@ -11,7 +11,7 @@
 class ClientManager
 {
 private:
-    std::list<ClientData> clientList;
+    std::list<ClientData*> clientList;
 public:
     ClientManager(/* args */);
     ~ClientManager();
@@ -19,5 +19,7 @@ public:
     bool addClient (ClientData client);
     std::list<int> getClientSDList();
     void removeClient(int clientSD);
+    bool clientIsLogedIn(int clientSD);
+    void asignTrainId(int sd, int trainId);
 };
 

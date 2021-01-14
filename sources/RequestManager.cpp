@@ -8,11 +8,12 @@ RequestManager::~RequestManager()
 {
 }
 
-RequestManager::RequestManager(ClientManager* clientManager, std::mutex* clientManagerLock,std::deque <Request*>* requestQue ,std::mutex* requestQueLock ){
+RequestManager::RequestManager(ClientManager* clientManager, std::mutex* clientManagerLock,std::deque <Request*>* requestQue ,pthread_mutex_t* requestQueLock,pthread_cond_t *gotRequest ){
     this->clientManager=clientManager;
     this->clientManagerLock=clientManagerLock;
     this->requestQue=requestQue;
     this->requestQueLock=requestQueLock;
+    this->gotRequest=gotRequest;
 }
 int RequestManager::checkIfIsConected(int sd){
     char* x=new char();
@@ -40,9 +41,11 @@ int RequestManager::reciveMesage(int sd){
     }
     else{
         Request* newRequest=decodeRequest(sd);
-        this->requestQueLock->lock();
+        pthread_mutex_lock(this->requestQueLock);
         this->requestQue->push_back(newRequest);
-        this->requestQueLock->unlock();
+        pthread_mutex_unlock(this->requestQueLock);
+        sleep(0.5);
+        pthread_cond_signal(this->gotRequest);
         return 1;
     }
 

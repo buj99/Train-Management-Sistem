@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<trains>
+    <!-- soseste intr o ora test -->
+    <train id="0" conenctat="0" eDay="1" zp="00" hp="10" mp="32" zs="00" hs="12" ms="00" />
+    <train id="1" conenctat="0" eDay="0" zp="03" hp="00" mp="32" zs="03" hs="01" ms="25" />
+    <!-- pleaca intr o ora test -->
+    <train id="2" conenctat="0" eDay="1" zp="00" hp="02" mp="32" zs="00" hs="12" ms="00" />
+    <train id="3" conenctat="0" eDay="0" zp="03" hp="01" mp="32" zs="03" hs="12" ms="00" />
+    <train id="4" conenctat="0" eDay="1" zp="00" hp="23" mp="32" zs="00" hs="12" ms="00" />
+    <train id="5" conenctat="0" eDay="0" zp="03" hp="01" mp="32" zs="00" hs="12" ms="00" />
+    <!-- <train id="0" conenctat="0" eDay="1" zp="0" hp="10" mp="32" zs="0" hs="12" ms="00" /> -->
+</trains>
