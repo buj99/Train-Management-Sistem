@@ -14,10 +14,14 @@ RequestManager::RequestManager(ClientManager* clientManager, std::mutex* clientM
     this->requestQue=requestQue;
     this->requestQueLock=requestQueLock;
     this->gotRequest=gotRequest;
+
 }
 int RequestManager::checkIfIsConected(int sd){
-    char* x=new char();
-    if(recv(sd,x,1,MSG_PEEK)<=0)return 0;
+    char *x =new char();
+    if(recv(sd,x,1,MSG_PEEK)<=0){
+        return 0;
+    }
+    printf("[%d]dupa rcv\n",sd);
     return 1;
 }
 Request * RequestManager::decodeRequest(int sd){
@@ -36,21 +40,15 @@ Request * RequestManager::decodeRequest(int sd){
     return newRequest;
 }
 int RequestManager::reciveMesage(int sd){
-    if(checkIfIsConected(sd)==0){
-        return 0;
-    }
-    else{
-        Request* newRequest=decodeRequest(sd);
+    Request* newRequest = decodeRequest(sd);
         pthread_mutex_lock(this->requestQueLock);
         this->requestQue->push_back(newRequest);
-        pthread_mutex_unlock(this->requestQueLock);
-        sleep(0.5);
         pthread_cond_signal(this->gotRequest);
-        return 1;
-    }
+        pthread_mutex_unlock(this->requestQueLock);
+    if(newRequest!=NULL)return 1;
+    else return 0;
 
 }
-
 
 
 void RequestManager::start(){
@@ -62,7 +60,8 @@ void RequestManager::start(){
     tv.tv_usec = 200000;
     
     int maxfd=0;
-    FD_ZERO(&readfds);
+    
+
     while (true){ 
         char * msgFromClient = (char*)malloc(sizeof(char)); 
         this->clientManagerLock->lock();
@@ -74,14 +73,16 @@ void RequestManager::start(){
                 maxfd=sd;
             }
         }
+        
         retval=select(maxfd+1,&readfds,NULL,NULL,&tv);
         if(retval==-1){
-            printf("[Thread Request Manager]Eroare la select()\n");
+            perror("[Thread Request Manager]Eroare la select()\n");
         }
         else{
             if(retval){
                 for(int clientSD : clientSDList){
                     if(FD_ISSET(clientSD,&readfds)){
+                        printf("[SD set]%d\n",clientSD);
                         //if(read(clientSD,&fromClient,sizeof(int))==0){
                         if(reciveMesage(clientSD)==0){
                             this->clientManagerLock->lock();

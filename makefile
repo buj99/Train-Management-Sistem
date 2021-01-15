@@ -1,4 +1,4 @@
-ServerCppFiles = server.cpp ./sources/Request.cpp ./sources/ClientManager.cpp ./sources/ClientData.cpp ./sources/RequestManager.cpp ./sources/ConectionManager.cpp
+ServerCppFiles = server.cpp ./sources/RequestProcesor.cpp ./sources/info_trenuri.cpp ./sources/Request.cpp ./sources/ClientManager.cpp ./sources/ClientData.cpp ./sources/RequestManager.cpp ./sources/ConectionManager.cpp
 
 all : clean server client 
 

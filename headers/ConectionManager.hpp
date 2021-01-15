@@ -11,10 +11,9 @@ class ConectionManager
 {
 private:
     ClientManager * clientManager;
-    std::mutex* clientManagerLock;
 public:
     ConectionManager(/* args */);
-    ConectionManager(ClientManager* clientManager, std::mutex* clientManagerLock);
+    ConectionManager(ClientManager* clientManager);
     ~ConectionManager();
     int start(int sd);
 };

@@ -1,20 +1,23 @@
 #include "../headers/ClientManager.hpp"
 
-ClientManager::ClientManager(/* args */)
+ClientManager::ClientManager(pthread_mutex_t * clientListLock)
 {
+    this->clientListLock=clientListLock;
 }
 
 ClientManager::~ClientManager()
 {
 }
 
-std::list<ClientData>* ClientManager::getClientList(){
-    return NULL;
+std::list<ClientData*>* ClientManager::getClientList(){
+    return &(this->clientList);
 }
 bool ClientManager::addClient(ClientData client){
+    //mutex
     printf("[Client Manager]client nou: %d\n",client.getSD());
+    pthread_mutex_lock(this->clientListLock);
     clientList.push_front(&client);
-
+    pthread_mutex_unlock(this->clientListLock);
     return true;
 }
 std::list<int> ClientManager::getClientSDList(){
@@ -26,11 +29,21 @@ std::list<int> ClientManager::getClientSDList(){
 }
 
 void ClientManager::removeClient(int clientSD){
+    //mutex
+    pthread_mutex_lock(this->clientListLock);
     this->clientList.remove_if(
         [clientSD](ClientData* cl){
             return cl->getSD()==clientSD;
         }
     );
+    pthread_mutex_unlock(this->clientListLock);
+}
+int ClientManager::getTrainId(int clientSD){
+    for(ClientData* cl : clientList){
+        if(cl->getSD()==clientSD){
+            return cl->getTrainId();
+        }
+    }
 }
 bool ClientManager::clientIsLogedIn(int sd){
     for(ClientData* cl: clientList){

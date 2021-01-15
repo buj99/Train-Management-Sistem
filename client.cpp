@@ -21,8 +21,29 @@
 
 /* codul de eroare returnat de anumite apeluri */
 extern int errno;
-
-int request;
+void getRespons(int sd){
+  int status ;
+  read(sd,&status, sizeof(int));
+  printf("*********response*********\n");
+  switch (status)
+  {
+  case SUCCES_NO_MSG:
+    printf("Succes\n");
+    break;
+  case SUCCES:{
+    int len ;
+    read(sd, &len , sizeof(int));
+    char* msg=(char*)malloc(len);
+    read(sd,msg,len);
+    printf("%s\n",msg);
+  }
+    break;
+  default:printf("Failuare !\n");
+    break;
+  }
+  
+}
+int request=0;
 int setRequest(char* msg);
 void makeRequest(int request , char* parameter);
 /* portul de conectare la server*/
@@ -70,7 +91,7 @@ int main (int argc, char *argv[])
   /*start conv */
   char* msg=(char*)malloc(sizeof(char)*10);
   int len;
-  while(true){
+  while(request!=QUIT){
     printf("introduecti o comanda:");
     
     scanf("%s",msg);
@@ -80,23 +101,34 @@ int main (int argc, char *argv[])
     case LOGIN:{
       scanf("%s",msg);
       makeRequest(request,msg);
+      getRespons(sd);
       }
       break;
     case QUIT:
       makeRequest(request,NULL);
+      getRespons(sd);
+
     break;
     case TODAY:
       makeRequest(request,NULL);
+      getRespons(sd);
+
       break;
     case PHOUR:
       makeRequest(request,NULL);
+      getRespons(sd);
+
       break;
     case SHOUR:
       makeRequest(request,NULL);
+      printf("comanda trimisa\n");
+      getRespons(sd);
+
       break;
     case UPDATE:{
       scanf("%s",msg);
       makeRequest(request,msg);
+      getRespons(sd);
     }
       break;
     default:{
@@ -122,14 +154,11 @@ int setRequest(char* msg){
 }
 
 void makeRequest(int request , char* parameter){
-  if(write(sd,&request,sizeof(int))!=-1){
-    printf("[TEST]Am trimis request %d ",request);
-  }
+  write(sd,&request,sizeof(int));
   if(request==LOGIN||request==UPDATE){
     int len = strlen(parameter)+1;
     write(sd,(void*)&len,sizeof(len));
     write(sd,parameter,len);
-    printf("cu parametrul \" %s \"  de lungime %d",parameter,len);
   }
-  printf("\n");
+
 }

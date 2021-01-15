@@ -162,12 +162,6 @@ char* InfoTrenuri::currentHourTrainsArive(){
     msg= composeRespons(msg,p1);
     for(xml_node tren : this->root.children()){
         merge=false;
-        //conditie data actuala 
-        //la sosire verific daca ora de sosire este egala cu ora actuala si minutul sosire 
-        //este mai mic sau egal decat minutul actual si ziua de sosire este egala cu ziua actuala 
-        //conditie data peste o ora 
-        //sau verific daca new_hour este egala cu ora de sosire si new_minute este mai mare sau egal 
-        //cu minutul actual si ziua de sosire este egala cu noua zi
         char* zi_sosire=strdup(tren.attribute("zs").value());
         char* ora_sosire=strdup(tren.attribute("hs").value());
         char* minut_sosire=strdup(tren.attribute("ms").value());
@@ -231,4 +225,29 @@ void InfoTrenuri::plus_hour(struct tm* date ,int min_add , int* new_day, int* ne
     
 }
 
-void InfoTrenuri::updateSosire(int trainID ,int intarziere){}
+void InfoTrenuri::updateSosire(int trainID ,int intarziere){
+    int minut, ora,zi;
+    for(xml_node tren : this->root.children()){
+        if(atoi(tren.attribute("id").value())==trainID){
+            minut= atoi(tren.attribute("ms").value());
+            ora=atoi(tren.attribute("hs").value());
+            zi=atoi(tren.attribute("zs").value());
+            if(minut+intarziere>=59){
+                if(ora+1>=23){
+                    if(zi+1>30){
+                        zi=1;
+                    }
+                    else{
+                        zi=zi+1;
+                    }
+                    ora=0;
+                }else ora=ora+1;
+                minut=minut+intarziere-59;
+            }else minut = minut+intarziere;
+            tren.attribute("ms").set_value(minut);
+            tren.attribute("hs").set_value(ora);
+            tren.attribute("zs").set_value(zi);
+            break;
+        }
+    }
+}
