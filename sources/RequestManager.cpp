@@ -82,7 +82,6 @@ void RequestManager::start(){
             if(retval){
                 for(int clientSD : clientSDList){
                     if(FD_ISSET(clientSD,&readfds)){
-                        printf("[SD set]%d\n",clientSD);
                         //if(read(clientSD,&fromClient,sizeof(int))==0){
                         if(reciveMesage(clientSD)==0){
                             this->clientManagerLock->lock();
